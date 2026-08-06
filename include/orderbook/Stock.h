@@ -3,6 +3,12 @@
 #include <vector>
 #include "orderbook/Order.h"
 
+#ifdef ORDERBOOK_TRACE
+    #define OB_TRACE(x) do { std::cout << x; } while (0)
+#else
+    #define OB_TRACE(x) do { } while (0)
+#endif
+
 class Stock {
 public:
     void addOrder(Order order);

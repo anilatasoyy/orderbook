@@ -10,5 +10,12 @@ add_executable(orderbook
     src/Order.cpp
     src/Stock.cpp
 )
+add_executable(benchmark 
+    src/benchmark.cpp 
+    src/Order.cpp 
+    src/Stock.cpp
+)
 
 target_include_directories(orderbook PRIVATE include)
+target_include_directories(benchmark PRIVATE include)
+target_compile_definitions(orderbook PRIVATE ORDERBOOK_TRACE)

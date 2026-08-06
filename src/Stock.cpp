@@ -63,7 +63,7 @@ void Stock::transaction(Order &order)
 
             if (resting.quantity > order.quantity)
             {   // Resting order is larger: incoming is fully filled, resting stays (reduced).
-                std::cout << "TRADE: " << order.quantity << " @ " << price << "\n";
+                OB_TRACE("TRADE: " << order.quantity << " @ " << price << "\n");
                 resting.quantity -= order.quantity;
                 order.quantity = 0;
             }
@@ -72,7 +72,7 @@ void Stock::transaction(Order &order)
             { 
                 // Resting order is smaller or equal: it's fully consumed and removed;
                 // incoming keeps whatever's left over and continues to the next level.
-                std::cout << "TRADE: " << resting.quantity << " @ " << price << "\n";
+                OB_TRACE("TRADE: " << resting.quantity << " @ " << price << "\n");
                 order.quantity -= resting.quantity;
                 best->second.erase(best->second.begin()); // remove the filled resting order
                 if (best->second.empty()) book.erase(best); // drop the level if now empty
