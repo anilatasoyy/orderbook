@@ -1,9 +1,9 @@
 #pragma once
-#include <map>
 #include <vector>
 #include "orderbook/Order.h"
 
 #ifdef ORDERBOOK_TRACE
+    #include <iostream>
     #define OB_TRACE(x) do { std::cout << x; } while (0)
 #else
     #define OB_TRACE(x) do { } while (0)
@@ -16,7 +16,15 @@ public:
     void transaction(Order& order);
 
 private:
-    std::map<long, std::vector<Order>> bids;
-    std::map<long, std::vector<Order>> asks;
-    bool crosses(const Order &order,const std::map<long, std::vector<Order>>& book) const;
+    static constexpr long MIN_PRICE = 9900;
+    static constexpr long MAX_PRICE = 10100;
+    static constexpr int  NUM_LEVELS = MAX_PRICE - MIN_PRICE + 1;   // 201
+
+    std::vector<Order> bid_levels[NUM_LEVELS];
+    std::vector<Order> ask_levels[NUM_LEVELS];
+    int price_to_index(long price) const { return (int)(price - MIN_PRICE); }
+    long index_to_price(int idx) const { return (long)idx + MIN_PRICE; }
+    int  best_ask_index() const;
+    int  best_bid_index() const;
+    bool crosses(const Order& order, int best_index) const;
 };
