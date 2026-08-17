@@ -24,7 +24,9 @@ private:
     std::vector<Order> ask_levels[NUM_LEVELS];
     int price_to_index(long price) const { return (int)(price - MIN_PRICE); }
     long index_to_price(int idx) const { return (long)idx + MIN_PRICE; }
-    int  best_ask_index() const;
-    int  best_bid_index() const;
+    int best_ask_idx{-1};
+    int best_bid_idx{-1};
+    void advance_best_ask();
+    void advance_best_bid();
     bool crosses(const Order& order, int best_index) const;
 };
