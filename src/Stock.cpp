@@ -9,13 +9,13 @@ void Stock::addOrder(Order order)
         int idx = price_to_index(order.price);
         if (order.is_buy)
         {
-            bid_levels[idx].push_back(order);
+            bid_levels[idx].push(order);
             if (idx > best_bid_idx)
                 best_bid_idx = idx;
         }
         else
         {
-            ask_levels[idx].push_back(order);
+            ask_levels[idx].push(order);
             if (best_ask_idx == -1 || idx < best_ask_idx)
                 best_ask_idx = idx;
         }
@@ -28,11 +28,11 @@ void Stock::printBook() const
 
     for (int i = 0; i < NUM_LEVELS; i++)
     {
-        if (ask_levels[i].empty())
-            continue;
+        if (ask_levels[i].empty()) continue;
         int total = 0;
-        for (const auto &ord : ask_levels[i])
-            total += ord.quantity;
+
+        for (int j = ask_levels[i].head; j < (int)ask_levels[i].orders.size(); ++j) total += ask_levels[i].orders[j].quantity;
+            
         std::cout << index_to_price(i) << " x " << total << "\n";
     }
     std::cout << "-------------------\n";
@@ -42,8 +42,7 @@ void Stock::printBook() const
         if (bid_levels[i].empty())
             continue;
         int total = 0;
-        for (const auto &ord : bid_levels[i])
-            total += ord.quantity;
+        for (int j = bid_levels[i].head; j < (int)bid_levels[i].orders.size(); ++j) total += bid_levels[i].orders[j].quantity;
         std::cout << index_to_price(i) << " x " << total << "\n";
     }
 }
@@ -93,9 +92,9 @@ void Stock::transaction(Order &order)
         if (!crosses(order, best))
             break;
 
-        std::vector<Order> &level = order.is_buy ? ask_levels[best] : bid_levels[best];
+        Level& level = order.is_buy ? ask_levels[best] : bid_levels[best];
 
-        Order &resting = level.front();    // earliest order at that price (time priority)
+        Order& resting = level.front();    // earliest order at that price (time priority)
         long price = index_to_price(best); // trades execute at the resting order's price
 
         if (resting.quantity > order.quantity)
@@ -111,9 +110,10 @@ void Stock::transaction(Order &order)
             // incoming keeps whatever's left over and continues to the next level.
             OB_TRACE("TRADE: " << resting.quantity << " @ " << price << "\n");
             order.quantity -= resting.quantity;
-            level.erase(level.begin());
+            level.pop_front();
             if (level.empty())
             {
+                level.reset();
                 if (order.is_buy)
                     advance_best_ask();
                 else

@@ -20,8 +20,19 @@ private:
     static constexpr long MAX_PRICE = 10100;
     static constexpr int  NUM_LEVELS = MAX_PRICE - MIN_PRICE + 1;   // 201
 
-    std::vector<Order> bid_levels[NUM_LEVELS];
-    std::vector<Order> ask_levels[NUM_LEVELS];
+    struct Level {
+        std::vector<Order> orders;
+        int head = 0;
+
+        bool empty() const { return head >= (int)orders.size(); }
+        Order& front() { return orders[head]; }
+        void pop_front() { ++head; }
+        void push(const Order& o) {orders.push_back(o); }
+        void reset() {orders.clear(); head = 0;}
+    };
+
+    Level bid_levels[NUM_LEVELS];
+    Level ask_levels[NUM_LEVELS];
     int price_to_index(long price) const { return (int)(price - MIN_PRICE); }
     long index_to_price(int idx) const { return (long)idx + MIN_PRICE; }
     int best_ask_idx{-1};
