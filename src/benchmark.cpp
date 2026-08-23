@@ -13,7 +13,7 @@ int main()
 
     // rng
     std::mt19937 rng(42);                                        // sabit seed
-    std::uniform_int_distribution<long> price_dist(9900, 10100); // 200 aralık
+    std::uniform_int_distribution<long> price_dist(5000, 15000); // 200 aralık
     std::uniform_int_distribution<int> qty_dist(1, 100);
     std::uniform_int_distribution<int> side_dist(0, 1);
 

@@ -16,14 +16,14 @@ public:
     void transaction(Order& order);
 
 private:
-    static constexpr long MIN_PRICE = 9900;
-    static constexpr long MAX_PRICE = 10100;
+    static constexpr long MIN_PRICE = 5000;
+    static constexpr long MAX_PRICE = 15000;
     static constexpr int  NUM_LEVELS = MAX_PRICE - MIN_PRICE + 1;   // 201
 
     struct Level {
         std::vector<Order> orders;
         int head = 0;
-        static constexpr int RESERVE_SIZE = 200;
+        static constexpr int RESERVE_SIZE = 16;
 
         Level() { orders.reserve(RESERVE_SIZE); }
 
