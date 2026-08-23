@@ -23,7 +23,7 @@ private:
     struct Level {
         std::vector<Order> orders;
         int head = 0;
-        const int RESERVE_SIZE = 200;
+        static constexpr int RESERVE_SIZE = 200;
 
         Level() { orders.reserve(RESERVE_SIZE); }
 

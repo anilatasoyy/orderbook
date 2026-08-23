@@ -43,9 +43,9 @@ int main()
     // order başına zaman ölçümü
     for (auto &o : orders)
     {
-        auto start = std::chrono::high_resolution_clock::now();
+        auto start = std::chrono::steady_clock::now();
         stock.addOrder(o);
-        auto end = std::chrono::high_resolution_clock::now();
+        auto end = std::chrono::steady_clock::now();
         latencies.push_back(
             std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count());
     }
@@ -60,6 +60,20 @@ int main()
     {
         return latencies[(size_t)(p * (latencies.size() - 1))];
     };
+
+    //Benchmark B batch version, clock works in general instead of one by one
+    {
+        Stock batch_stock;
+        auto start = std::chrono::steady_clock::now();
+        for(auto o : orders){
+            Order copy = o;
+            batch_stock.addOrder(copy);
+        }
+        auto end = std::chrono::steady_clock::now();
+        long long total_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(end-start).count();
+        std::cout<<"batch total: "<<total_ns<<"ns\n";
+        std::cout<<"batch average: "<<double(total_ns)/ N << "ns/order\n";
+    }
 
     std::cout << "orders:  " << N << "\n";
     std::cout << "mean:    " << (sum / N) << " ns\n";
