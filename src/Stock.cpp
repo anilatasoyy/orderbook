@@ -10,12 +10,14 @@ void Stock::addOrder(Order order)
         if (order.is_buy)
         {
             bid_levels[idx].push(order);
+            set_bit(bid_occupancy, idx);
             if (idx > best_bid_idx)
                 best_bid_idx = idx;
         }
         else
         {
             ask_levels[idx].push(order);
+            set_bit(ask_occupancy, idx);
             if (best_ask_idx == -1 || idx < best_ask_idx)
                 best_ask_idx = idx;
         }
@@ -49,24 +51,42 @@ void Stock::printBook() const
 
 void Stock::advance_best_ask()
 {
-    for (int i = best_ask_idx; i < NUM_LEVELS; ++i)
-        if (!ask_levels[i].empty())
-        {
-            best_ask_idx = i;
+    int from = best_ask_idx;
+    int word = from/64;
+    int bit = from % 64;
+
+    uint64_t w = ask_occupancy[word] & (~0ULL << bit);
+
+    while(word < NUM_WORDS) {
+        if(w != 0) {
+            best_ask_idx = word * 64 + __builtin_ctzll(w);
             return;
         }
-    best_ask_idx = -1; // no asks left
+        ++word;
+        if(word < NUM_WORDS) w = ask_occupancy[word];
+    }
+    best_ask_idx = -1;
+
 }
 
 void Stock::advance_best_bid()
 {
-    for (int i = best_bid_idx; i >= 0; --i)
-        if (!bid_levels[i].empty())
-        {
-            best_bid_idx = i;
+    int from = best_bid_idx;
+    int word = from/64;
+    int bit = from % 64;
+
+    uint64_t w = bid_occupancy[word] & (~0ULL >> (63 - bit));
+
+    while(word >= 0) {
+        if(w != 0) {
+            best_bid_idx = word * 64 +(63 - __builtin_clzll(w));
             return;
         }
-    best_bid_idx = -1; // no bids left
+        --word;
+        if(word >= 0) w = bid_occupancy[word];
+    }
+    best_bid_idx = -1;
+
 }
 
 // Does the incoming order cross the book's best price?
@@ -114,6 +134,8 @@ void Stock::transaction(Order &order)
             if (level.empty())
             {
                 level.reset();
+                if(order.is_buy) clear_bit(ask_occupancy, best);
+                else             clear_bit(bid_occupancy, best);
                 if (order.is_buy)
                     advance_best_ask();
                 else

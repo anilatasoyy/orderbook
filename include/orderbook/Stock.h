@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include "orderbook/Order.h"
+#include <cstdint>
 
 #ifdef ORDERBOOK_TRACE
     #include <iostream>
@@ -18,7 +19,12 @@ public:
 private:
     static constexpr long MIN_PRICE = 5000;
     static constexpr long MAX_PRICE = 15000;
-    static constexpr int  NUM_LEVELS = MAX_PRICE - MIN_PRICE + 1;   // 201
+    static constexpr int  NUM_LEVELS = MAX_PRICE - MIN_PRICE + 1;   // 10001
+    static constexpr int BITS_PER_WORD = 64;
+    static constexpr int NUM_WORDS = (NUM_LEVELS + BITS_PER_WORD - 1) / BITS_PER_WORD; // rounding error fix
+
+    uint64_t bid_occupancy[NUM_WORDS] = {0};
+    uint64_t ask_occupancy[NUM_WORDS] = {0};
 
     struct Level {
         std::vector<Order> orders;
@@ -43,4 +49,6 @@ private:
     void advance_best_ask();
     void advance_best_bid();
     bool crosses(const Order& order, int best_index) const;
+    void set_bit(uint64_t* bitset, int idx) { bitset[idx / 64] |= (1ULL << (idx % 64)); }
+    void clear_bit(uint64_t* bitset, int idx) {bitset[idx / 64] &= ~(1ULL << (idx % 64)); }
 };
